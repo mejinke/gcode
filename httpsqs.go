@@ -8,13 +8,13 @@ import (
 	"strings"
 )
 
-type httpsqs struct {
+type Httpsqs struct {
 	host, port, auth, charset string
 }
 
 //Init a new httpsqs
-func NewHttpSQS(options ...string) *httpsqs {
-	mq := &httpsqs{"localhost", "1218", "", "utf-8"}
+func NewHttpSQS(options ...string) *Httpsqs {
+	mq := &Httpsqs{"localhost", "1218", "", "utf-8"}
 	for i := 0; i < len(options); i++ {
 		switch i {
 		case 0:
@@ -31,18 +31,18 @@ func NewHttpSQS(options ...string) *httpsqs {
 }
 
 //Build query string for httpsqs
-func (mq *httpsqs) makeQuery(query string) (res string) {
+func (mq *Httpsqs) makeQuery(query string) (res string) {
 	query = "http://" + mq.host + ":" + mq.port + "/?" +
 		"auth=" + mq.auth + "&charset=" + mq.charset + "&" + query
 	return query
 }
 
 //Do Put request from httpsqs
-//func (mq *httpsqs) put(query string, value string) (res string, err error) {
+//func (mq *Httpsqs) put(query string, value string) (res string, err error) {
 //}
 
 //put data to queue
-func (mq *httpsqs) Put(queue string, value string) (rs bool, err error) {
+func (mq *Httpsqs) Put(queue string, value string) (rs bool, err error) {
 	query := mq.makeQuery("name=" + queue + "&opt=put")
 	r := new(http.Response)
 	r, err = http.Post(query, "", strings.NewReader(value))
@@ -63,7 +63,7 @@ func (mq *httpsqs) Put(queue string, value string) (rs bool, err error) {
 }
 
 //Do Get request from httpsqs
-func (mq *httpsqs) get(query string) (res string, err error) {
+func (mq *Httpsqs) get(query string) (res string, err error) {
 	r := new(http.Response)
 	r, err = http.Get(mq.makeQuery(query))
 	if err != nil {
@@ -81,7 +81,7 @@ func (mq *httpsqs) get(query string) (res string, err error) {
 
 //Do Get request from httpsqs
 //And gets normal string data
-func (mq *httpsqs) getString(query string) (res string, err error) {
+func (mq *Httpsqs) getString(query string) (res string, err error) {
 	res, err = mq.get(query)
 	if err != nil {
 		return "", err
@@ -94,7 +94,7 @@ func (mq *httpsqs) getString(query string) (res string, err error) {
 
 //Do Get request from httpsqs
 //And gets normal bool data
-func (mq *httpsqs) getBool(query string, expected string) (rs bool, err error) {
+func (mq *Httpsqs) getBool(query string, expected string) (rs bool, err error) {
 	var res string
 	res, err = mq.get(query)
 	if err != nil {
@@ -104,7 +104,7 @@ func (mq *httpsqs) getBool(query string, expected string) (rs bool, err error) {
 }
 
 //Get data from queue with position
-func (mq *httpsqs) PGet(queue string) (res string, pos int, err error) {
+func (mq *Httpsqs) PGet(queue string) (res string, pos int, err error) {
 	query := mq.makeQuery("name=" + queue + "&opt=get")
 	r := new(http.Response)
 	r, err = http.Get(query)
@@ -134,7 +134,7 @@ func (mq *httpsqs) PGet(queue string) (res string, pos int, err error) {
 }
 
 //Get data from queue
-func (mq *httpsqs) Get(queue string) (res string, err error) {
+func (mq *Httpsqs) Get(queue string) (res string, err error) {
 	query := "name=" + queue + "&opt=get"
 	res, err = mq.getString(query)
 	if err != nil {
@@ -147,37 +147,37 @@ func (mq *httpsqs) Get(queue string) (res string, err error) {
 }
 
 //Get status from queue
-func (mq *httpsqs) Status(queue string) (res string, err error) {
+func (mq *Httpsqs) Status(queue string) (res string, err error) {
 	query := "name=" + queue + "&opt=status"
 	return mq.getString(query)
 }
 
 //Get status from queue in json format
-func (mq *httpsqs) StatusJson(queue string) (res string, err error) {
+func (mq *Httpsqs) StatusJson(queue string) (res string, err error) {
 	query := "name=" + queue + "&opt=status_json"
 	return mq.getString(query)
 }
 
 //View data from queue
-func (mq *httpsqs) View(queue string, pos int) (res string, err error) {
+func (mq *Httpsqs) View(queue string, pos int) (res string, err error) {
 	query := "name=" + queue + "opt=view&pos=" + string(pos)
 	return mq.getString(query)
 }
 
 //Clear queue
-func (mq *httpsqs) Reset(queue string) (rs bool, err error) {
+func (mq *Httpsqs) Reset(queue string) (rs bool, err error) {
 	query := "name=" + queue + "&opt=reset"
 	return mq.getBool(query, "HTTPSQS_RESET_OK")
 }
 
 //Modify the maximum of queue
-func (mq *httpsqs) MaxQueue(queue string, num int) (rs bool, err error) {
+func (mq *Httpsqs) MaxQueue(queue string, num int) (rs bool, err error) {
 	query := "name=" + queue + "&opt=maxqueue&num=" + string(num)
 	return mq.getBool(query, "HTTPSQS_MAXQUEUE_OK")
 }
 
 //Modify the frequecy for httpsqs to save data to disk
-func (mq *httpsqs) SyncTime(num int) (rs bool, err error) {
+func (mq *Httpsqs) SyncTime(num int) (rs bool, err error) {
 	query := "name=httpsqs_synctime&opt=synctime&num=" + string(num)
 	return mq.getBool(query, "HTTPSQS_SYNCTIME_OK")
 }

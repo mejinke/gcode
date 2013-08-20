@@ -5,14 +5,17 @@ import (
 	"time"
 )
 
+var DateFormat = "2006-01-02"
+var DateTimeFormat = "2006-01-02 15:04:05-07"
+
 // 获取当前日期
 func Date() string {
-	return time.Now().Format("2006-01-02")
+	return time.Now().Format(DateFormat)
 }
 
 // 获取当前时间
 func DateTime() string {
-	return time.Now().Format("2006-01-02 15:04:05-07")
+	return time.Now().Format(DateTimeFormat)
 }
 
 // 获取年月日

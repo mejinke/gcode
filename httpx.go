@@ -55,6 +55,51 @@ func (h *Httpx) AddPostValue(key string, values []string) {
 	}
 }
 
+// 发送请求【请求失败后重复请求】
+// int loopCount 重复请求次数
+// int interval 重复请求的间隔，秒
+func (h *Httpx) SendLoop(loopCount, interval int) (response *http.Response, err error) {
+	reqIndex := 0 //当前请求数
+ST:
+	reqIndex++
+	response, err = h.Send()
+	if err != nil {
+		if reqIndex < loopCount {
+			time.Sleep(time.Second * time.Duration(interval))
+			goto ST
+		}
+	}
+
+	return response, err
+}
+
+// 发送请求【请求失败、状态码不为200时 重复请求】
+// int loopCount 重复请求次数
+// int interval 重复请求的间隔，秒
+func (h *Httpx) SendLoopStatusCodeMustIsOK(loopCount, interval int) (response *http.Response, err error) {
+	reqIndex := 0 //当前请求数
+ST:
+	reqIndex++
+	response, err = h.Send()
+	if err != nil {
+		if reqIndex < loopCount {
+			time.Sleep(time.Second * time.Duration(interval))
+			goto ST
+		}
+	} else {
+		if response.StatusCode != 200 {
+			response.Body.Close()
+			err = errors.New("请求状态码为：" + strconv.Itoa(response.StatusCode))
+			if reqIndex < loopCount {
+				time.Sleep(time.Second * time.Duration(interval))
+				goto ST
+			}
+		}
+	}
+
+	return response, err
+}
+
 //发送请求
 func (h *Httpx) Send() (response *http.Response, err error) {
 	if h.Url == "" {

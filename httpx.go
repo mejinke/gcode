@@ -10,6 +10,9 @@ import (
 	"time"
 )
 
+//最后一次请求时间
+var last_request_time time.Time
+
 var headerUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36"
 
 type Httpx struct {
@@ -32,6 +35,11 @@ func NewHttpx(reqUrl string) (h *Httpx) {
 		Method:  "GET",
 		Timeout: 30,
 	}
+}
+
+//获取最后一次的请求时间
+func GetLastRequestTime() time.Time {
+	return last_request_time
 }
 
 //添加header
@@ -173,6 +181,10 @@ func (h *Httpx) Send() (response *http.Response, err error) {
 		Transport: transport,
 	}
 	response, err = client.Do(req)
+
+	//记录最后一次请求完成的时间
+	last_request_time = time.Now()
+
 	return response, err
 
 }

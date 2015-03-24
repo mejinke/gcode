@@ -2,6 +2,7 @@ package gcode
 
 import (
 	"errors"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -23,6 +24,7 @@ type Httpx struct {
 	Method   string
 	ProxyUrl string //代理URL
 	PostData url.Values
+	Body     io.Reader
 	Timeout  int //超时时间，秒
 }
 
@@ -124,7 +126,11 @@ func (h *Httpx) Send() (response *http.Response, err error) {
 	var req *http.Request
 
 	if h.Method == "POST" {
-		req, _ = http.NewRequest("POST", h.Url, strings.NewReader(h.PostData.Encode()))
+		if h.Body == nil {
+			req, _ = http.NewRequest("POST", h.Url, strings.NewReader(h.PostData.Encode()))
+		} else {
+			req, _ = http.NewRequest("POST", h.Url, h.Body)
+		}
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	} else {
 		req, _ = http.NewRequest(h.Method, h.Url, nil)
@@ -144,7 +150,7 @@ func (h *Httpx) Send() (response *http.Response, err error) {
 		}
 	}
 
-	transport := &http.Transport{}
+	transport := &http.Transport{DisableKeepAlives: true, ResponseHeaderTimeout: time.Second * 20}
 
 	//是否使用代理
 	if h.ProxyUrl != "" {
